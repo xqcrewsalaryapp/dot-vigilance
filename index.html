@@ -3,484 +3,575 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101827">
 <title>Dot Vigilance Trainer</title>
 
 <style>
 :root {
- --bg:#101827;
- --panel:#192538;
- --line:#304158;
- --text:#f2f5fa;
- --muted:#a8b5c7;
- --accent:#4d8dff;
- --good:#32c48d;
- --bad:#ff6878;
+  --bg:#101827;
+  --panel:#192538;
+  --line:#304158;
+  --text:#f2f5fa;
+  --muted:#a8b5c7;
+  --accent:#4d8dff;
+  --good:#32c48d;
+  --bad:#ff6878;
 }
 
-* {box-sizing:border-box}
+* {
+  box-sizing:border-box;
+}
+
+html {
+  min-height:100%;
+  background:var(--bg);
+}
 
 body {
- margin:0;
- background:var(--bg);
- color:var(--text);
- font:16px system-ui,sans-serif;
+  margin:0;
+  min-height:100vh;
+  min-height:100svh;
+  background:var(--bg);
+  color:var(--text);
+  font:16px system-ui,-apple-system,sans-serif;
 }
 
 main {
- width:min(100% - 24px,650px);
- margin:auto;
- padding:22px 0 40px;
+  width:min(100% - 24px,650px);
+  margin:auto;
+  padding:20px 0 calc(30px + env(safe-area-inset-bottom));
 }
 
-h1 {font-size:24px;margin:0}
-h3 {margin-top:0}
+h1 {
+  font-size:24px;
+  margin:0;
+}
+
+h3 {
+  margin:0 0 12px;
+}
 
 .sub,.note {
- color:var(--muted);
- font-size:12px;
+  color:var(--muted);
+  font-size:12px;
 }
 
 .panel {
- background:var(--panel);
- border:1px solid var(--line);
- border-radius:15px;
- padding:15px;
- margin:12px 0;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:15px;
+  margin:12px 0;
 }
 
 label {
- display:block;
- color:var(--muted);
- font-size:13px;
- margin:12px 0 5px;
+  display:block;
+  color:var(--muted);
+  font-size:13px;
+  margin:12px 0 5px;
 }
 
 select,button {
- width:100%;
- padding:12px;
- border-radius:10px;
- border:1px solid var(--line);
- background:#22334b;
- color:var(--text);
- font:inherit;
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#22334b;
+  color:var(--text);
+  font:inherit;
 }
 
 button {
- cursor:pointer;
- font-weight:700;
- touch-action:manipulation;
+  cursor:pointer;
+  font-weight:700;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
 }
 
 button:disabled {
- opacity:.4;
- cursor:not-allowed;
+  opacity:.4;
+  cursor:not-allowed;
 }
 
 .primary {
- background:var(--accent);
- border-color:var(--accent);
+  background:var(--accent);
+  border-color:var(--accent);
 }
 
 .grid {
- display:grid;
- grid-template-columns:repeat(3,1fr);
- gap:8px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
 }
 
 .metric {
- background:#111d2d;
- padding:10px;
- border-radius:10px;
- text-align:center;
+  background:#111d2d;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
 }
 
 .metric small {
- display:block;
- color:var(--muted);
- font-size:11px;
+  display:block;
+  color:var(--muted);
+  font-size:11px;
 }
 
 .metric strong {
- font-size:22px;
- font-variant-numeric:tabular-nums;
+  font-size:22px;
+  font-variant-numeric:tabular-nums;
 }
 
-.arena {text-align:center}
+.arena {
+  text-align:center;
+}
 
-svg {
- width:min(78vw,330px);
- height:min(78vw,330px);
- display:block;
- margin:auto;
+.arena svg {
+  width:min(78vw,330px);
+  height:auto;
+  display:block;
+  margin:auto;
+  overflow:visible;
 }
 
 .controls {
- display:grid;
- grid-template-columns:repeat(3,1fr);
- grid-template-areas:
- ". direction ."
- "position . color"
- ". shape .";
- gap:9px;
- max-width:390px;
- margin:auto;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-areas:
+    "position color"
+    "direction shape";
+  gap:10px;
+  width:100%;
+  margin:auto;
 }
 
 .answer {
- min-height:78px;
- display:flex;
- flex-direction:column;
- justify-content:center;
- align-items:center;
- gap:2px;
+  min-height:76px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:2px;
+  padding:8px;
 }
 
-.answer b {font-size:24px}
-.answer span {font-size:12px}
+.answer b {
+  font-size:24px;
+  line-height:1.2;
+}
+
+.answer span {
+  font-size:13px;
+}
+
 .answer small {
- font-size:10px;
- color:var(--muted);
+  font-size:10px;
+  color:var(--muted);
 }
 
-[data-answer=direction] {grid-area:direction}
 [data-answer=position] {grid-area:position}
 [data-answer=color] {grid-area:color}
+[data-answer=direction] {grid-area:direction}
 [data-answer=shape] {grid-area:shape}
 
 .row {
- display:flex;
- gap:8px;
+  display:flex;
+  gap:8px;
 }
 
-.row>* {flex:1}
+.row>* {
+  flex:1;
+}
 
-.hidden {display:none!important}
+.hidden {
+  display:none!important;
+}
 
 #feedbackLive {
- min-height:75px;
- text-align:center;
- display:flex;
- flex-direction:column;
- justify-content:center;
+  min-height:70px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
-#feedbackLive b {font-size:17px}
+#feedbackLive b {
+  font-size:17px;
+}
 
 #breakdown {
- line-height:2;
+  line-height:2;
 }
 
 footer {
- text-align:center;
- color:var(--muted);
- font-size:11px;
- margin-top:20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:20px;
 }
 
-@media(max-width:400px) {
- main {width:calc(100% - 18px)}
- .panel {padding:12px}
+/* MOBILE OPTIMIZATION */
+
+@media(max-width:600px) {
+
+  main {
+    width:calc(100% - 20px);
+    padding-top:12px;
+    padding-bottom:calc(35px + env(safe-area-inset-bottom));
+  }
+
+  h1 {
+    font-size:21px;
+  }
+
+  .panel {
+    padding:12px;
+    margin:9px 0;
+  }
+
+  .arena svg {
+    width:min(65vw,260px);
+  }
+
+  .controls {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-areas:
+      "position color"
+      "direction shape";
+    gap:10px;
+  }
+
+  .answer {
+    min-height:68px;
+    padding:8px;
+  }
+
+  .answer b {
+    font-size:22px;
+  }
+
+  .answer span {
+    font-size:13px;
+  }
+
+  .metric {
+    padding:8px 5px;
+  }
+
+  .metric strong {
+    font-size:19px;
+  }
+
+  #feedbackLive {
+    min-height:65px;
+  }
+
+  footer {
+    padding-bottom:15px;
+  }
 }
 </style>
 </head>
 
 <body>
+
 <main>
 
 <header>
-<h1>Dot Vigilance Trainer</h1>
-<p class="sub">
-Position · Color · Shape · Direction
-</p>
+  <h1>Dot Vigilance Trainer</h1>
+  <p class="sub">Position · Color · Shape · Direction</p>
 </header>
 
-<!-- SETUP SCREEN -->
+<!-- SETUP -->
 
 <section id="setup" class="panel">
 
-<h3>Test Configuration</h3>
+  <h3>Test Configuration</h3>
 
-<label>Test Duration</label>
-<select id="duration">
-<option value="120">2 Minutes - Practice</option>
-<option value="300" selected>5 Minutes - Standard</option>
-<option value="600">10 Minutes - Endurance</option>
-</select>
+  <label>Test Duration</label>
+  <select id="duration">
+    <option value="120">2 Minutes - Practice</option>
+    <option value="300" selected>5 Minutes - Standard</option>
+    <option value="600">10 Minutes - Endurance</option>
+  </select>
 
-<label>Movement Speed</label>
-<select id="speed">
-<option value="1200">Slow</option>
-<option value="950" selected>Normal</option>
-<option value="750">Fast</option>
-<option value="600">Very Fast</option>
-</select>
+  <label>Movement Speed</label>
+  <select id="speed">
+    <option value="1200">Slow</option>
+    <option value="950" selected>Normal</option>
+    <option value="750">Fast</option>
+    <option value="600">Very Fast</option>
+  </select>
 
-<label>Target Frequency</label>
-<select id="frequency">
-<option value=".07">7% - Low</option>
-<option value=".10" selected>10% - Normal</option>
-<option value=".15">15% - High</option>
-<option value=".20">20% - Very High</option>
-</select>
+  <label>Target Frequency</label>
+  <select id="frequency">
+    <option value=".07">7% - Low</option>
+    <option value=".10" selected>10% - Normal</option>
+    <option value=".15">15% - High</option>
+    <option value=".20">20% - Very High</option>
+  </select>
 
-<!-- CONTROL GUIDE -->
+  <!-- CONTROL GUIDE -->
 
-<div class="panel" style="background:#111d2d">
+  <div class="panel" style="background:#111d2d">
 
-<h3>CONTROL GUIDE</h3>
+    <h3>CONTROL GUIDE</h3>
 
-<div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="grid" style="grid-template-columns:1fr 1fr">
 
-<div>
-<b>← Position</b>
-<p class="note">Double step</p>
-</div>
+      <div>
+        <b>← Position</b>
+        <p class="note">Double step</p>
+      </div>
 
-<div>
-<b>→ Color</b>
-<p class="note">Color change</p>
-</div>
+      <div>
+        <b>→ Color</b>
+        <p class="note">Color change</p>
+      </div>
 
-<div>
-<b>↓ Shape</b>
-<p class="note">Shape change</p>
-</div>
+      <div>
+        <b>↑ Direction</b>
+        <p class="note">Direction reversal</p>
+      </div>
 
-<div>
-<b>↑ Direction</b>
-<p class="note">Direction reversal</p>
-</div>
+      <div>
+        <b>↓ Shape</b>
+        <p class="note">Shape change</p>
+      </div>
 
-</div>
+    </div>
 
-<hr style="border-color:#304158">
+    <hr style="border-color:#304158">
 
-<p class="note">
-Identify the type of change and press its corresponding button.
-You will receive feedback one second after your response.
-</p>
+    <p class="note">
+      Identify the type of change and press its corresponding button.
+      Feedback appears one second after your response.
+    </p>
 
-<p class="note">
-A minimum 3-second interval separates target events.
-You have 1 second to respond to each target.
-</p>
+    <p class="note">
+      You have 1 second to respond.
+      A minimum 3-second interval separates target events.
+    </p>
 
-</div>
+  </div>
 
-<button class="primary" id="start">
-START TEST
-</button>
+  <button class="primary" id="start">
+    START TEST
+  </button>
 
 </section>
 
-<!-- GAME SCREEN -->
+<!-- GAME -->
 
 <section id="game" class="hidden">
 
-<div class="grid">
+  <div class="grid">
 
-<div class="metric">
-<small>TIME LEFT</small>
-<strong id="time">05:00</strong>
-</div>
+    <div class="metric">
+      <small>TIME LEFT</small>
+      <strong id="time">05:00</strong>
+    </div>
 
-<div class="metric">
-<small>DETECTED</small>
-<strong id="hits">0</strong>
-</div>
+    <div class="metric">
+      <small>DETECTED</small>
+      <strong id="hits">0</strong>
+    </div>
 
-<div class="metric">
-<small>ERRORS</small>
-<strong id="errors">0</strong>
-</div>
+    <div class="metric">
+      <small>ERRORS</small>
+      <strong id="errors">0</strong>
+    </div>
 
-</div>
+  </div>
 
-<div class="panel arena">
+  <!-- TRACK -->
 
-<p class="note">FOLLOW THE DOT</p>
+  <div class="panel arena">
 
-<svg viewBox="0 0 320 320">
+    <p class="note">FOLLOW THE DOT</p>
 
-<circle
-cx="160"
-cy="160"
-r="119"
-fill="none"
-stroke="#40516a"
-stroke-width="2"
-/>
+    <svg viewBox="0 0 320 320">
 
-<g id="markers"></g>
+      <circle
+        cx="160"
+        cy="160"
+        r="119"
+        fill="none"
+        stroke="#40516a"
+        stroke-width="2"
+      />
 
-<circle
-id="shapeDot"
-cx="160"
-cy="41"
-r="12"
-fill="#4d8dff"
-/>
+      <g id="markers"></g>
 
-</svg>
+      <circle
+        id="shapeDot"
+        cx="160"
+        cy="41"
+        r="12"
+        fill="#4d8dff"
+      />
 
-<p class="note">
-Watch for position, color, shape or direction changes.
-</p>
+    </svg>
 
-</div>
+    <p class="note">
+      Watch for position, color, shape or direction changes.
+    </p>
 
-<!-- LIVE FEEDBACK -->
+  </div>
 
-<div id="feedbackLive" class="panel">
+  <!-- FEEDBACK -->
 
-<b>READY</b>
+  <div id="feedbackLive" class="panel">
 
-<p class="note">
-Waiting for the next event...
-</p>
+    <b>READY</b>
 
-</div>
+    <p class="note">
+      Waiting for the next event...
+    </p>
 
-<!-- RESPONSE BUTTONS -->
+  </div>
 
-<div class="panel">
+  <!-- CONTROLS -->
 
-<p class="note" style="text-align:center">
-SELECT THE CHANGE TYPE
-</p>
+  <div class="panel">
 
-<div class="controls">
+    <p class="note" style="text-align:center">
+      SELECT THE CHANGE TYPE
+    </p>
 
-<button class="answer" data-answer="direction">
-<b>↑</b>
-<span>Direction</span>
-<small>Arrow Up</small>
-</button>
+    <div class="controls">
 
-<button class="answer" data-answer="position">
-<b>←</b>
-<span>Position</span>
-<small>Arrow Left</small>
-</button>
+      <button class="answer" data-answer="position">
+        <b>←</b>
+        <span>Position</span>
+        <small>Arrow Left</small>
+      </button>
 
-<button class="answer" data-answer="color">
-<b>→</b>
-<span>Color</span>
-<small>Arrow Right</small>
-</button>
+      <button class="answer" data-answer="color">
+        <b>→</b>
+        <span>Color</span>
+        <small>Arrow Right</small>
+      </button>
 
-<button class="answer" data-answer="shape">
-<b>↓</b>
-<span>Shape</span>
-<small>Arrow Down</small>
-</button>
+      <button class="answer" data-answer="direction">
+        <b>↑</b>
+        <span>Direction</span>
+        <small>Arrow Up</small>
+      </button>
 
-</div>
+      <button class="answer" data-answer="shape">
+        <b>↓</b>
+        <span>Shape</span>
+        <small>Arrow Down</small>
+      </button>
 
-</div>
+    </div>
 
-<div class="row">
+  </div>
 
-<div class="metric">
-<small>LAST REACTION</small>
-<strong id="lastRT">—</strong>
-</div>
+  <!-- LIVE STATS -->
 
-<div class="metric">
-<small>DETECTION RATE</small>
-<strong id="accuracy">—</strong>
-</div>
+  <div class="row">
 
-</div>
+    <div class="metric">
+      <small>LAST REACTION</small>
+      <strong id="lastRT">—</strong>
+    </div>
 
-<button id="stop" style="margin-top:10px">
-END SESSION
-</button>
+    <div class="metric">
+      <small>DETECTION RATE</small>
+      <strong id="accuracy">—</strong>
+    </div>
+
+  </div>
+
+  <button id="stop" style="margin-top:10px">
+    END SESSION
+  </button>
 
 </section>
 
-<!-- RESULTS SCREEN -->
+<!-- RESULTS -->
 
 <section id="results" class="hidden">
 
-<div class="panel" style="text-align:center">
+  <div class="panel" style="text-align:center">
 
-<p class="note">SESSION COMPLETE</p>
+    <p class="note">SESSION COMPLETE</p>
 
-<h2 id="grade">Results</h2>
+    <h2 id="grade">Results</h2>
 
-<p class="note" id="summary"></p>
+    <p class="note" id="summary"></p>
 
-</div>
+  </div>
 
-<div class="grid">
+  <div class="grid">
 
-<div class="metric">
-<small>CORRECT</small>
-<strong id="rHits">0</strong>
-</div>
+    <div class="metric">
+      <small>CORRECT</small>
+      <strong id="rHits">0</strong>
+    </div>
 
-<div class="metric">
-<small>MISSED</small>
-<strong id="rMiss">0</strong>
-</div>
+    <div class="metric">
+      <small>MISSED</small>
+      <strong id="rMiss">0</strong>
+    </div>
 
-<div class="metric">
-<small>FALSE ALARMS</small>
-<strong id="rFalse">0</strong>
-</div>
+    <div class="metric">
+      <small>FALSE ALARMS</small>
+      <strong id="rFalse">0</strong>
+    </div>
 
-</div>
+  </div>
 
-<div class="panel">
+  <div class="panel">
 
-<div class="grid">
+    <div class="grid">
 
-<div>
-<small>Detection</small>
-<strong id="rAcc">—</strong>
-</div>
+      <div>
+        <small>Detection</small>
+        <strong id="rAcc">—</strong>
+      </div>
 
-<div>
-<small>Avg Reaction</small>
-<strong id="rRT">—</strong>
-</div>
+      <div>
+        <small>Avg Reaction</small>
+        <strong id="rRT">—</strong>
+      </div>
 
-<div>
-<small>Total Targets</small>
-<strong id="rTotal">0</strong>
-</div>
+      <div>
+        <small>Total Targets</small>
+        <strong id="rTotal">0</strong>
+      </div>
 
-</div>
+    </div>
 
-</div>
+  </div>
 
-<div class="panel">
+  <div class="panel">
 
-<h3>Target Breakdown</h3>
+    <h3>Target Breakdown</h3>
 
-<div id="breakdown" class="note"></div>
+    <div id="breakdown" class="note"></div>
 
-</div>
+  </div>
 
-<div class="panel">
+  <div class="panel">
 
-<h3>Performance Feedback</h3>
+    <h3>Performance Feedback</h3>
 
-<p id="feedback" class="note"></p>
+    <p id="feedback" class="note"></p>
 
-</div>
+  </div>
 
-<button class="primary" id="again">
-NEW SESSION
-</button>
+  <button class="primary" id="again">
+    NEW SESSION
+  </button>
 
 </section>
 
 <footer>
-Independent training simulation · Not an official Pegasus test
+  Independent training simulation · Not an official Pegasus test
 </footer>
 
 </main>
@@ -529,617 +620,622 @@ let total = 0;
 let reactions = [];
 
 const stats = {
- position:{total:0,hits:0,misses:0},
- color:{total:0,hits:0,misses:0},
- shape:{total:0,hits:0,misses:0},
- direction:{total:0,hits:0,misses:0}
+  position:{total:0,hits:0,misses:0},
+  color:{total:0,hits:0,misses:0},
+  shape:{total:0,hits:0,misses:0},
+  direction:{total:0,hits:0,misses:0}
 };
 
 const shapes = [
- "circle",
- "square",
- "triangle"
+  "circle",
+  "square",
+  "triangle"
 ];
 
 const colors = [
- "#4d8dff",
- "#ffbd4a",
- "#35c98b",
- "#ec70bd",
- "#a78bfa",
- "#ff765e"
+  "#4d8dff",
+  "#ffbd4a",
+  "#35c98b",
+  "#ec70bd",
+  "#a78bfa",
+  "#ff765e"
 ];
 
-// TRACK
+/* TRACK */
 
 function point(i) {
- return {
-  x:cx+r*Math.sin(i*2*Math.PI/N),
-  y:cy-r*Math.cos(i*2*Math.PI/N)
- };
+  return {
+    x:cx+r*Math.sin(i*2*Math.PI/N),
+    y:cy-r*Math.cos(i*2*Math.PI/N)
+  };
 }
 
 for(let i=0;i<N;i++) {
 
- const q = point(i);
+  const q = point(i);
 
- const c = document.createElementNS(NS,"circle");
+  const c = document.createElementNS(NS,"circle");
 
- c.setAttribute("cx",q.x);
- c.setAttribute("cy",q.y);
- c.setAttribute("r",3);
- c.setAttribute("fill","#63748b");
+  c.setAttribute("cx",q.x);
+  c.setAttribute("cy",q.y);
+  c.setAttribute("r",3);
+  c.setAttribute("fill","#63748b");
 
- $("markers").append(c);
+  $("markers").append(c);
 }
 
-// DRAW DOT
+/* DRAW DOT */
 
 function draw() {
 
- const q = point(pos);
+  const q = point(pos);
 
- let node = $("shapeDot");
+  let node = $("shapeDot");
 
- if(shape === "circle") {
+  if(shape === "circle") {
 
-  if(node.tagName.toLowerCase() !== "circle") {
+    if(node.tagName.toLowerCase() !== "circle") {
 
-   const n = document.createElementNS(NS,"circle");
+      const n = document.createElementNS(NS,"circle");
 
-   n.id = "shapeDot";
+      n.id = "shapeDot";
 
-   node.replaceWith(n);
+      node.replaceWith(n);
 
-   node = n;
-  }
+      node = n;
+    }
 
-  node.setAttribute("cx",q.x);
-  node.setAttribute("cy",q.y);
-  node.setAttribute("r",12);
-
- }
-
- else if(shape === "square") {
-
-  if(node.tagName.toLowerCase() !== "rect") {
-
-   const n = document.createElementNS(NS,"rect");
-
-   n.id = "shapeDot";
-
-   node.replaceWith(n);
-
-   node = n;
-  }
-
-  node.setAttribute("x",q.x-11);
-  node.setAttribute("y",q.y-11);
-  node.setAttribute("width",22);
-  node.setAttribute("height",22);
-  node.setAttribute("rx",1);
-
- }
-
- else {
-
-  if(node.tagName.toLowerCase() !== "polygon") {
-
-   const n = document.createElementNS(NS,"polygon");
-
-   n.id = "shapeDot";
-
-   node.replaceWith(n);
-
-   node = n;
-  }
-
-  node.setAttribute(
-   "points",
-   `${q.x},${q.y-14} ${q.x+13},${q.y+11} ${q.x-13},${q.y+11}`
-  );
-
- }
-
- node.setAttribute("fill",color);
-}
-
-// FEEDBACK
-
-function feedback(title,message,colorValue="#a8b5c7") {
-
- const box = $("feedbackLive");
-
- box.innerHTML = "";
-
- const heading = document.createElement("b");
- heading.textContent = title;
- heading.style.color = colorValue;
-
- const detail = document.createElement("p");
- detail.className = "note";
- detail.textContent = message;
-
- box.append(heading,detail);
-}
-
-// FORMAT
-
-function formatTime(s) {
-
- return String(Math.floor(s/60)).padStart(2,"0")
- + ":"
- + String(Math.floor(s%60)).padStart(2,"0");
-
-}
-
-// UPDATE STATISTICS
-
-function update() {
-
- if(!running) return;
-
- const left = Math.max(
-  0,
-  (deadline-Date.now())/1000
- );
-
- $("time").textContent = formatTime(left);
-
- $("hits").textContent = hits;
-
- $("errors").textContent = misses+falseAlarms;
-
- $("accuracy").textContent =
-  total ? Math.round(hits/total*100)+"%" : "—";
-
- if(left <= 0) finish();
-
-}
-
-// BUTTON LOCK
-
-function lockButtons(value) {
-
- document.querySelectorAll(".answer").forEach(btn => {
-  btn.disabled = value;
- });
-
-}
-
-// GENERATE MOVEMENT AND TARGET
-
-function step() {
-
- if(!running) return;
-
- const now = performance.now();
-
- const canGenerate =
-  !active &&
-  !responsePending &&
-  now >= nextTargetAt;
-
- let type = null;
-
- if(canGenerate && Math.random() < p) {
-
-  const types = [
-   "position",
-   "color",
-   "shape",
-   "direction"
-  ];
-
-  type = types[
-   Math.floor(Math.random()*types.length)
-  ];
-
- }
-
- if(type) {
-
-  active = type;
-
-  activeAt = now;
-
-  total++;
-
-  stats[type].total++;
-
-  // Minimum 3 seconds between targets
-
-  nextTargetAt = now+3000;
-
-  if(type === "position") {
-
-   pos = (pos+2*direction+N)%N;
+    node.setAttribute("cx",q.x);
+    node.setAttribute("cy",q.y);
+    node.setAttribute("r",12);
 
   }
 
-  if(type === "color") {
+  else if(shape === "square") {
 
-   const choices = colors.filter(c => c !== color);
+    if(node.tagName.toLowerCase() !== "rect") {
 
-   color = choices[
-    Math.floor(Math.random()*choices.length)
-   ];
+      const n = document.createElementNS(NS,"rect");
 
-  }
+      n.id = "shapeDot";
 
-  if(type === "shape") {
+      node.replaceWith(n);
 
-   const choices = shapes.filter(s => s !== shape);
+      node = n;
+    }
 
-   shape = choices[
-    Math.floor(Math.random()*choices.length)
-   ];
-
-  }
-
-  if(type === "direction") {
-
-   direction *= -1;
-
-   pos = (pos+direction+N)%N;
-
-  }
-
-  feedback(
-   "CHANGE DETECTED",
-   "Identify the correct category."
-  );
-
-  // 1-second response deadline
-
-  clearTimeout(targetTimeout);
-
-  targetTimeout = setTimeout(() => {
-
-   if(active === type && running) {
-
-    misses++;
-
-    stats[type].misses++;
-
-    active = null;
-
-    feedback(
-     "MISSED TARGET",
-     "You did not respond within 1 second.",
-     "#ff6878"
-    );
-
-    update();
-
-   }
-
-  },1000);
-
- }
-
- else {
-
-  // Normal movement continues
-
-  pos = (pos+direction+N)%N;
-
- }
-
- draw();
-
- update();
-
-}
-
-// USER RESPONSE
-
-function answer(type) {
-
- if(!running || responsePending) return;
-
- responsePending = true;
-
- const expected = active;
-
- clearTimeout(targetTimeout);
-
- lockButtons(true);
-
- feedback(
-  "RESPONSE REGISTERED",
-  "Evaluating your answer..."
- );
-
- // Feedback exactly 1 second after input
-
- responseTimeout = setTimeout(() => {
-
-  if(!running) return;
-
-  if(expected) {
-
-   if(type === expected) {
-
-    hits++;
-
-    stats[expected].hits++;
-
-    const rt = performance.now()-activeAt;
-
-    reactions.push(rt);
-
-    $("lastRT").textContent =
-     Math.round(rt)+" ms";
-
-    feedback(
-     "CORRECT",
-     "Correct identification: "+expected.toUpperCase(),
-     "#32c48d"
-    );
-
-   }
-
-   else {
-
-    falseAlarms++;
-
-    misses++;
-
-    stats[expected].misses++;
-
-    feedback(
-     "INCORRECT",
-     "Expected: "+expected.toUpperCase()
-     +" | Selected: "+type.toUpperCase(),
-     "#ff6878"
-    );
-
-   }
-
-   active = null;
+    node.setAttribute("x",q.x-11);
+    node.setAttribute("y",q.y-11);
+    node.setAttribute("width",22);
+    node.setAttribute("height",22);
+    node.setAttribute("rx",1);
 
   }
 
   else {
 
-   falseAlarms++;
+    if(node.tagName.toLowerCase() !== "polygon") {
 
-   feedback(
-    "FALSE ALARM",
-    "No target event was active.",
-    "#ff6878"
-   );
+      const n = document.createElementNS(NS,"polygon");
+
+      n.id = "shapeDot";
+
+      node.replaceWith(n);
+
+      node = n;
+    }
+
+    node.setAttribute(
+      "points",
+      `${q.x},${q.y-14} ${q.x+13},${q.y+11} ${q.x-13},${q.y+11}`
+    );
+
+  }
+
+  node.setAttribute("fill",color);
+}
+
+/* FEEDBACK */
+
+function feedback(title,message,colorValue="#a8b5c7") {
+
+  const box = $("feedbackLive");
+
+  box.innerHTML = "";
+
+  const heading = document.createElement("b");
+
+  heading.textContent = title;
+
+  heading.style.color = colorValue;
+
+  const detail = document.createElement("p");
+
+  detail.className = "note";
+
+  detail.textContent = message;
+
+  box.append(heading,detail);
+}
+
+/* TIME */
+
+function formatTime(s) {
+
+  return String(Math.floor(s/60)).padStart(2,"0")
+  + ":"
+  + String(Math.floor(s%60)).padStart(2,"0");
+
+}
+
+/* BUTTON LOCK */
+
+function lockButtons(value) {
+
+  document.querySelectorAll(".answer").forEach(btn => {
+    btn.disabled = value;
+  });
+
+}
+
+/* UPDATE */
+
+function update() {
+
+  if(!running) return;
+
+  const left = Math.max(
+    0,
+    (deadline-Date.now())/1000
+  );
+
+  $("time").textContent = formatTime(left);
+
+  $("hits").textContent = hits;
+
+  $("errors").textContent = misses+falseAlarms;
+
+  $("accuracy").textContent =
+    total ? Math.round(hits/total*100)+"%" : "—";
+
+  if(left <= 0) finish();
+
+}
+
+/* MOVEMENT AND TARGET GENERATION */
+
+function step() {
+
+  if(!running) return;
+
+  const now = performance.now();
+
+  const canGenerate =
+    !active &&
+    !responsePending &&
+    now >= nextTargetAt;
+
+  let type = null;
+
+  if(canGenerate && Math.random() < p) {
+
+    const types = [
+      "position",
+      "color",
+      "shape",
+      "direction"
+    ];
+
+    type = types[
+      Math.floor(Math.random()*types.length)
+    ];
+
+  }
+
+  if(type) {
+
+    active = type;
+
+    activeAt = now;
+
+    total++;
+
+    stats[type].total++;
+
+    // Minimum 3 seconds between targets
+
+    nextTargetAt = now+3000;
+
+    if(type === "position") {
+
+      pos = (pos+2*direction+N)%N;
+
+    }
+
+    if(type === "color") {
+
+      const choices = colors.filter(c => c !== color);
+
+      color = choices[
+        Math.floor(Math.random()*choices.length)
+      ];
+
+    }
+
+    if(type === "shape") {
+
+      const choices = shapes.filter(s => s !== shape);
+
+      shape = choices[
+        Math.floor(Math.random()*choices.length)
+      ];
+
+    }
+
+    if(type === "direction") {
+
+      direction *= -1;
+
+      pos = (pos+direction+N)%N;
+
+    }
+
+    feedback(
+      "CHANGE DETECTED",
+      "Identify the correct category."
+    );
+
+    // 1-second response deadline
+
+    clearTimeout(targetTimeout);
+
+    targetTimeout = setTimeout(() => {
+
+      if(active === type && running) {
+
+        misses++;
+
+        stats[type].misses++;
+
+        active = null;
+
+        feedback(
+          "MISSED TARGET",
+          "You did not respond within 1 second.",
+          "#ff6878"
+        );
+
+        update();
+
+      }
+
+    },1000);
+
+  }
+
+  else {
+
+    // Normal movement continues
+
+    pos = (pos+direction+N)%N;
+
+  }
+
+  draw();
+
+  update();
+
+}
+
+/* ANSWER */
+
+function answer(type) {
+
+  if(!running || responsePending) return;
+
+  responsePending = true;
+
+  const expected = active;
+
+  clearTimeout(targetTimeout);
+
+  lockButtons(true);
+
+  feedback(
+    "RESPONSE REGISTERED",
+    "Evaluating your answer..."
+  );
+
+  // Feedback one second after input
+
+  responseTimeout = setTimeout(() => {
+
+    if(!running) return;
+
+    if(expected) {
+
+      if(type === expected) {
+
+        hits++;
+
+        stats[expected].hits++;
+
+        const rt = performance.now()-activeAt;
+
+        reactions.push(rt);
+
+        $("lastRT").textContent =
+          Math.round(rt)+" ms";
+
+        feedback(
+          "CORRECT",
+          "Correct identification: "+expected.toUpperCase(),
+          "#32c48d"
+        );
+
+      }
+
+      else {
+
+        falseAlarms++;
+
+        misses++;
+
+        stats[expected].misses++;
+
+        feedback(
+          "INCORRECT",
+          "Expected: "+expected.toUpperCase()
+          +" | Selected: "+type.toUpperCase(),
+          "#ff6878"
+        );
+
+      }
+
+      active = null;
+
+    }
+
+    else {
+
+      falseAlarms++;
+
+      feedback(
+        "FALSE ALARM",
+        "No target event was active.",
+        "#ff6878"
+      );
+
+    }
+
+    responsePending = false;
+
+    lockButtons(false);
+
+    update();
+
+  },1000);
+
+}
+
+/* START */
+
+function start() {
+
+  clearInterval(timer);
+  clearInterval(clock);
+
+  clearTimeout(targetTimeout);
+  clearTimeout(responseTimeout);
+
+  duration = Number($("duration").value);
+
+  interval = Number($("speed").value);
+
+  p = Number($("frequency").value);
+
+  pos = 0;
+
+  shape = "circle";
+
+  color = "#4d8dff";
+
+  direction = 1;
+
+  active = null;
+
+  activeAt = 0;
+
+  responsePending = false;
+
+  nextTargetAt = 0;
+
+  hits = 0;
+  misses = 0;
+  falseAlarms = 0;
+  total = 0;
+
+  reactions = [];
+
+  Object.keys(stats).forEach(k => {
+
+    stats[k] = {
+      total:0,
+      hits:0,
+      misses:0
+    };
+
+  });
+
+  running = true;
+
+  deadline = Date.now()+duration*1000;
+
+  $("setup").classList.add("hidden");
+
+  $("results").classList.add("hidden");
+
+  $("game").classList.remove("hidden");
+
+  lockButtons(false);
+
+  $("lastRT").textContent = "—";
+
+  feedback(
+    "READY",
+    "Follow the dot and identify each change."
+  );
+
+  draw();
+
+  update();
+
+  timer = setInterval(step,interval);
+
+  clock = setInterval(update,200);
+
+}
+
+/* FINISH */
+
+function finish() {
+
+  if(!running) return;
+
+  running = false;
+
+  clearInterval(timer);
+  clearInterval(clock);
+
+  clearTimeout(targetTimeout);
+  clearTimeout(responseTimeout);
+
+  // Unresolved target = missed
+
+  if(active) {
+
+    misses++;
+
+    stats[active].misses++;
+
+    active = null;
 
   }
 
   responsePending = false;
 
-  lockButtons(false);
+  lockButtons(true);
 
-  update();
+  $("game").classList.add("hidden");
 
- },1000);
+  $("results").classList.remove("hidden");
 
-}
+  const accuracy = total
+    ? hits/total*100
+    : 0;
 
-// START
+  const average = reactions.length
+    ? reactions.reduce((a,b)=>a+b,0)/reactions.length
+    : null;
 
-function start() {
+  $("rHits").textContent = hits;
 
- clearInterval(timer);
- clearInterval(clock);
+  $("rMiss").textContent = misses;
 
- clearTimeout(targetTimeout);
- clearTimeout(responseTimeout);
+  $("rFalse").textContent = falseAlarms;
 
- duration = Number($("duration").value);
+  $("rAcc").textContent = accuracy.toFixed(1)+"%";
 
- interval = Number($("speed").value);
+  $("rRT").textContent =
+    average === null
+    ? "—"
+    : Math.round(average)+" ms";
 
- p = Number($("frequency").value);
+  $("rTotal").textContent = total;
 
- pos = 0;
-
- shape = "circle";
-
- color = "#4d8dff";
-
- direction = 1;
-
- active = null;
-
- activeAt = 0;
-
- responsePending = false;
-
- nextTargetAt = 0;
-
- hits = 0;
- misses = 0;
- falseAlarms = 0;
- total = 0;
-
- reactions = [];
-
- Object.keys(stats).forEach(k => {
-
-  stats[k] = {
-   total:0,
-   hits:0,
-   misses:0
-  };
-
- });
-
- running = true;
-
- deadline = Date.now()+duration*1000;
-
- $("setup").classList.add("hidden");
-
- $("results").classList.add("hidden");
-
- $("game").classList.remove("hidden");
-
- lockButtons(false);
-
- $("lastRT").textContent = "—";
-
- feedback(
-  "READY",
-  "Follow the dot and identify each change."
- );
-
- draw();
-
- update();
-
- timer = setInterval(step,interval);
-
- clock = setInterval(update,200);
-
-}
-
-// FINISH
-
-function finish() {
-
- if(!running) return;
-
- running = false;
-
- clearInterval(timer);
- clearInterval(clock);
-
- clearTimeout(targetTimeout);
- clearTimeout(responseTimeout);
-
- // Count unresolved target as missed
-
- if(active) {
-
-  misses++;
-
-  stats[active].misses++;
-
-  active = null;
-
- }
-
- responsePending = false;
-
- $("game").classList.add("hidden");
-
- $("results").classList.remove("hidden");
-
- const accuracy = total
-  ? hits/total*100
-  : 0;
-
- const average = reactions.length
-  ? reactions.reduce((a,b)=>a+b,0)/reactions.length
-    /1
-  : null;
-
- $("rHits").textContent = hits;
-
- $("rMiss").textContent = misses;
-
- $("rFalse").textContent = falseAlarms;
-
- $("rAcc").textContent = accuracy.toFixed(1)+"%";
-
- $("rRT").textContent =
-  average === null
-   ? "—"
-   : Math.round(average)+" ms";
-
- $("rTotal").textContent = total;
-
- $("grade").textContent =
-  accuracy >= 90 && falseAlarms <= 2
-   ? "Strong Session"
-   : accuracy >= 80
+  $("grade").textContent =
+    accuracy >= 90 && falseAlarms <= 2
+    ? "Strong Session"
+    : accuracy >= 80
     ? "Good Progress"
     : accuracy >= 65
-     ? "Developing"
-     : "Needs Practice";
+    ? "Developing"
+    : "Needs Practice";
 
- $("summary").textContent =
-  total+" targets · "+reactions.length+" valid responses";
+  $("summary").textContent =
+    total+" targets · "+reactions.length+" valid responses";
 
- $("breakdown").innerHTML =
-  ["position","color","shape","direction"]
-   .map(k =>
-    k.toUpperCase()+": "
-    +stats[k].hits+" detected / "
-    +stats[k].total+" targets"
-   )
-   .join("<br>");
+  $("breakdown").innerHTML =
+    ["position","color","shape","direction"]
+    .map(k =>
+      k.toUpperCase()+": "
+      +stats[k].hits+" detected / "
+      +stats[k].total+" targets"
+    )
+    .join("<br>");
 
- let notes = [];
+  let notes = [];
 
- if(accuracy < 80)
-  notes.push("Improve sustained attention and target recognition.");
+  if(accuracy < 80)
+    notes.push("Improve sustained attention and target recognition.");
 
- if(falseAlarms > 2)
-  notes.push("Reduce anticipatory responses.");
+  if(falseAlarms > 2)
+    notes.push("Reduce anticipatory responses.");
 
- if(average !== null && average > 650)
-  notes.push("Work on response speed while preserving accuracy.");
+  if(average !== null && average > 650)
+    notes.push("Work on response speed while preserving accuracy.");
 
- if(total === 0)
-  notes.push("No targets were generated. Repeat the session.");
+  if(total === 0)
+    notes.push("No targets were generated. Repeat the session.");
 
- if(notes.length === 0)
-  notes.push("Good balance of detection and response discipline.");
+  if(notes.length === 0)
+    notes.push("Good balance of detection and response discipline.");
 
- $("feedback").textContent = notes.join(" ");
+  $("feedback").textContent = notes.join(" ");
 
 }
 
-// TOUCH CONTROLS
+/* TOUCH CONTROLS */
 
 document.querySelectorAll(".answer").forEach(btn => {
 
- btn.addEventListener("click",() => {
+  btn.addEventListener("click",() => {
 
-  answer(btn.dataset.answer);
+    answer(btn.dataset.answer);
 
- });
+  });
 
 });
 
-// KEYBOARD CONTROLS
+/* KEYBOARD CONTROLS */
 
 document.addEventListener("keydown",e => {
 
- if(!running || e.repeat) return;
+  if(!running || e.repeat) return;
 
- const map = {
+  const map = {
 
-  ArrowUp:"direction",
+    ArrowUp:"direction",
 
-  ArrowLeft:"position",
+    ArrowLeft:"position",
 
-  ArrowRight:"color",
+    ArrowRight:"color",
 
-  ArrowDown:"shape"
+    ArrowDown:"shape"
 
- };
+  };
 
- if(map[e.key]) {
+  if(map[e.key]) {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  answer(map[e.key]);
+    answer(map[e.key]);
 
- }
+  }
 
 });
 
-// EVENT LISTENERS
+/* EVENTS */
 
 $("start").addEventListener("click",start);
 
@@ -1147,13 +1243,15 @@ $("stop").addEventListener("click",finish);
 
 $("again").addEventListener("click",() => {
 
- $("results").classList.add("hidden");
+  $("results").classList.add("hidden");
 
- $("setup").classList.remove("hidden");
+  $("setup").classList.remove("hidden");
+
+  lockButtons(false);
 
 });
 
-// INITIAL DRAW
+// Initial drawing
 
 draw();
 
