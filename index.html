@@ -1,0 +1,507 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Dot Vigilance Trainer</title>
+<style>
+:root {
+  --bg:#101827;--panel:#192538;--line:#304158;
+  --text:#f2f5fa;--muted:#a8b5c7;--accent:#4d8dff;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--text);
+ font:16px system-ui,sans-serif;
+}
+main{width:min(100% - 24px,650px);margin:auto;padding:22px 0 40px}
+h1{font-size:24px;margin:0}
+.sub,.note{color:var(--muted);font-size:12px}
+.panel{
+ background:var(--panel);border:1px solid var(--line);
+ border-radius:15px;padding:15px;margin:12px 0;
+}
+label{display:block;color:var(--muted);font-size:13px;margin:12px 0 5px}
+select,button{
+ width:100%;padding:12px;border-radius:10px;
+ border:1px solid var(--line);background:#22334b;
+ color:var(--text);font:inherit;
+}
+button{cursor:pointer;font-weight:700}
+.primary{background:var(--accent);border-color:var(--accent)}
+button:disabled{opacity:.4}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric{background:#111d2d;padding:10px;border-radius:10px;text-align:center}
+.metric small{display:block;color:var(--muted);font-size:11px}
+.metric strong{font-size:22px;font-variant-numeric:tabular-nums}
+svg{width:min(78vw,330px);height:min(78vw,330px);display:block;margin:auto}
+.arena{text-align:center}
+.controls{
+ display:grid;grid-template-columns:repeat(3,1fr);
+ grid-template-areas:". direction ." "position . color" ". shape .";
+ gap:9px;max-width:390px;margin:auto;
+}
+.answer{
+ min-height:78px;display:flex;flex-direction:column;
+ justify-content:center;align-items:center;gap:2px;
+ touch-action:manipulation;
+}
+.answer b{font-size:24px;line-height:1.2}
+.answer span{font-size:12px}
+.answer small{font-size:10px;color:var(--muted)}
+[data-answer=direction]{grid-area:direction}
+[data-answer=position]{grid-area:position}
+[data-answer=color]{grid-area:color}
+[data-answer=shape]{grid-area:shape}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:11px;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Dot Vigilance Trainer</h1>
+<p class="sub">Position · Color · Shape · Direction</p>
+
+<section id="setup" class="panel">
+<h3>Test Configuration</h3>
+
+<label>Duration</label>
+<select id="duration">
+<option value="120">2 minutes</option>
+<option value="300" selected>5 minutes</option>
+<option value="600">10 minutes</option>
+</select>
+
+<label>Movement Speed</label>
+<select id="speed">
+<option value="1200">Slow</option>
+<option value="950" selected>Normal</option>
+<option value="750">Fast</option>
+<option value="600">Very Fast</option>
+</select>
+
+<label>Target Frequency</label>
+<select id="frequency">
+<option value=".07">7% - Low</option>
+<option value=".10" selected>10% - Normal</option>
+<option value=".15">15% - High</option>
+<option value=".20">20% - Very High</option>
+</select>
+
+<p class="note">
+Four independent target types. Only one event can occur at a time.
+Select the corresponding response button when you detect a change.
+</p>
+
+<button class="primary" id="start">START TEST</button>
+</section>
+
+<section id="game" class="hidden">
+
+<div class="grid">
+<div class="metric"><small>TIME LEFT</small><strong id="time">05:00</strong></div>
+<div class="metric"><small>DETECTED</small><strong id="hits">0</strong></div>
+<div class="metric"><small>ERRORS</small><strong id="errors">0</strong></div>
+</div>
+
+<div class="panel arena">
+<p class="note">FOLLOW THE DOT</p>
+<svg viewBox="0 0 320 320">
+<circle cx="160" cy="160" r="119"
+ fill="none" stroke="#40516a" stroke-width="2"/>
+<g id="markers"></g>
+<circle id="shapeDot" cx="160" cy="41" r="12" fill="#4d8dff"/>
+</svg>
+<p class="note">Watch for position, color, shape or direction changes.</p>
+</div>
+
+<div class="panel">
+<p class="note" style="text-align:center">
+SELECT THE CHANGE TYPE
+</p>
+<div class="controls">
+
+<button class="answer" data-answer="direction">
+<b>↑</b><span>Direction</span><small>Arrow Up</small>
+</button>
+
+<button class="answer" data-answer="position">
+<b>←</b><span>Position</span><small>Arrow Left</small>
+</button>
+
+<button class="answer" data-answer="color">
+<b>→</b><span>Color</span><small>Arrow Right</small>
+</button>
+
+<button class="answer" data-answer="shape">
+<b>↓</b><span>Shape</span><small>Arrow Down</small>
+</button>
+
+</div>
+</div>
+
+<div class="row">
+<div class="metric">
+<small>LAST REACTION</small>
+<strong id="lastRT">—</strong>
+</div>
+<div class="metric">
+<small>DETECTION RATE</small>
+<strong id="accuracy">—</strong>
+</div>
+</div>
+
+<button id="stop" style="margin-top:10px">END SESSION</button>
+</section>
+
+<section id="results" class="hidden">
+<div class="panel" style="text-align:center">
+<p class="note">SESSION COMPLETE</p>
+<h2 id="grade">Results</h2>
+<p class="note" id="summary"></p>
+</div>
+
+<div class="grid">
+<div class="metric"><small>CORRECT</small><strong id="rHits">0</strong></div>
+<div class="metric"><small>MISSED</small><strong id="rMiss">0</strong></div>
+<div class="metric"><small>FALSE ALARMS</small><strong id="rFalse">0</strong></div>
+</div>
+
+<div class="panel">
+<div class="grid">
+<div><small>Detection</small><strong id="rAcc">—</strong></div>
+<div><small>Avg Reaction</small><strong id="rRT">—</strong></div>
+<div><small>Total Targets</small><strong id="rTotal">0</strong></div>
+</div>
+</div>
+
+<div class="panel">
+<h3>Target Breakdown</h3>
+<div id="breakdown" class="note"></div>
+</div>
+
+<div class="panel">
+<h3>Performance Feedback</h3>
+<p id="feedback" class="note"></p>
+</div>
+
+<button class="primary" id="again">NEW SESSION</button>
+</section>
+
+<footer>Independent training simulation · Not an official Pegasus test</footer>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const N=12,cx=160,cy=160,r=119;
+
+let running=false;
+let timer=null,clock=null;
+let deadline=0;
+let interval=950,duration=300,p=.10;
+
+let pos=0;
+let shape="circle";
+let color="#4d8dff";
+let direction=1;
+
+let active=null,activeAt=0;
+let hits=0,misses=0,falseAlarms=0,total=0;
+let reactions=[];
+
+const stats={
+ position:{total:0,hits:0,misses:0},
+ color:{total:0,hits:0,misses:0},
+ shape:{total:0,hits:0,misses:0},
+ direction:{total:0,hits:0,misses:0}
+};
+
+const shapes=["circle","square","triangle"];
+const colors=["#4d8dff","#ffbd4a","#35c98b",
+"#ec70bd","#a78bfa","#ff765e"];
+
+function point(i){
+ return {
+  x:cx+r*Math.sin(i*2*Math.PI/N),
+  y:cy-r*Math.cos(i*2*Math.PI/N)
+ };
+}
+
+// Track markers
+for(let i=0;i<N;i++){
+ const q=point(i);
+ const c=document.createElementNS(NS,"circle");
+ c.setAttribute("cx",q.x);
+ c.setAttribute("cy",q.y);
+ c.setAttribute("r",3);
+ c.setAttribute("fill","#63748b");
+ $("markers").append(c);
+}
+
+// Draw dot in its current shape
+function draw(){
+ const q=point(pos);
+ let node=$("shapeDot");
+
+ if(shape==="circle"){
+  if(node.tagName.toLowerCase()!=="circle"){
+   const n=document.createElementNS(NS,"circle");
+   n.id="shapeDot";
+   node.replaceWith(n);
+   node=n;
+  }
+  node.setAttribute("cx",q.x);
+  node.setAttribute("cy",q.y);
+  node.setAttribute("r",12);
+ }
+
+ else if(shape==="square"){
+  if(node.tagName.toLowerCase()!=="rect"){
+   const n=document.createElementNS(NS,"rect");
+   n.id="shapeDot";
+   node.replaceWith(n);
+   node=n;
+  }
+  node.setAttribute("x",q.x-11);
+  node.setAttribute("y",q.y-11);
+  node.setAttribute("width",22);
+  node.setAttribute("height",22);
+  node.setAttribute("rx",1);
+ }
+
+ else{
+  if(node.tagName.toLowerCase()!=="polygon"){
+   const n=document.createElementNS(NS,"polygon");
+   n.id="shapeDot";
+   node.replaceWith(n);
+   node=n;
+  }
+  node.setAttribute("points",
+   `${q.x},${q.y-14} ${q.x+13},${q.y+11} ${q.x-13},${q.y+11}`);
+ }
+
+ node.setAttribute("fill",color);
+}
+
+function formatTime(s){
+ return String(Math.floor(s/60)).padStart(2,"0")+":"+
+ String(Math.floor(s%60)).padStart(2,"0");
+}
+
+function update(){
+ const left=Math.max(0,(deadline-Date.now())/1000);
+
+ $("time").textContent=formatTime(left);
+ $("hits").textContent=hits;
+ $("errors").textContent=misses+falseAlarms;
+ $("accuracy").textContent=
+ total?Math.round(hits/total*100)+"%":"—";
+
+ if(left<=0)finish();
+}
+
+// One event at a time
+function step(){
+ if(!running)return;
+
+ // Miss previous event if unanswered
+ if(active){
+  misses++;
+  stats[active].misses++;
+  active=null;
+ }
+
+ const type=Math.random()<p
+  ?["position","color","shape","direction"]
+   [Math.floor(Math.random()*4)]
+  :null;
+
+ if(type){
+  active=type;
+  activeAt=performance.now();
+  total++;
+  stats[type].total++;
+
+  if(type==="position"){
+   pos=(pos+2*direction+N)%N;
+  }
+
+  if(type==="color"){
+   const choices=colors.filter(c=>c!==color);
+   color=choices[Math.floor(Math.random()*choices.length)];
+  }
+
+  if(type==="shape"){
+   const choices=shapes.filter(s=>s!==shape);
+   shape=choices[Math.floor(Math.random()*choices.length)];
+  }
+
+  if(type==="direction"){
+   direction*=-1;
+   pos=(pos+direction+N)%N;
+  }
+
+ }else{
+  pos=(pos+direction+N)%N;
+ }
+
+ draw();
+ update();
+}
+
+function start(){
+ clearInterval(timer);
+ clearInterval(clock);
+
+ duration=Number($("duration").value);
+ interval=Number($("speed").value);
+ p=Number($("frequency").value);
+
+ pos=0;
+ shape="circle";
+ color="#4d8dff";
+ direction=1;
+ active=null;
+
+ hits=0;misses=0;falseAlarms=0;total=0;
+ reactions=[];
+
+ Object.keys(stats).forEach(k=>{
+  stats[k]={total:0,hits:0,misses:0};
+ });
+
+ running=true;
+ deadline=Date.now()+duration*1000;
+
+ $("setup").classList.add("hidden");
+ $("results").classList.add("hidden");
+ $("game").classList.remove("hidden");
+
+ document.querySelectorAll(".answer").forEach(b=>b.disabled=false);
+
+ draw();
+ update();
+
+ timer=setInterval(step,interval);
+ clock=setInterval(update,200);
+}
+
+function answer(type){
+ if(!running)return;
+
+ if(active){
+  if(type===active){
+   const rt=performance.now()-activeAt;
+   reactions.push(rt);
+   hits++;
+   stats[active].hits++;
+   active=null;
+   $("lastRT").textContent=Math.round(rt)+" ms";
+  }else{
+   falseAlarms++;
+  }
+ }else{
+  falseAlarms++;
+ }
+
+ update();
+}
+
+function finish(){
+ if(!running)return;
+
+ running=false;
+ clearInterval(timer);
+ clearInterval(clock);
+
+ if(active){
+  misses++;
+  stats[active].misses++;
+  active=null;
+ }
+
+ document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+
+ $("game").classList.add("hidden");
+ $("results").classList.remove("hidden");
+
+ const acc=total?hits/total*100:0;
+ const avg=reactions.length
+  ?reactions.reduce((a,b)=>a+b,0)/reactions.length
+  :null;
+
+ $("rHits").textContent=hits;
+ $("rMiss").textContent=misses;
+ $("rFalse").textContent=falseAlarms;
+ $("rAcc").textContent=acc.toFixed(1)+"%";
+ $("rRT").textContent=avg===null?"—":Math.round(avg)+" ms";
+ $("rTotal").textContent=total;
+
+ $("grade").textContent=
+  acc>=90&&falseAlarms<=2?"Strong session":
+  acc>=80?"Good progress":
+  acc>=65?"Developing":"Needs practice";
+
+ $("summary").textContent=
+  `${total} targets · ${reactions.length} valid responses`;
+
+ $("breakdown").innerHTML=
+  ["position","color","shape","direction"]
+  .map(k=>`${k.toUpperCase()}: ${stats[k].hits} detected / ${stats[k].total} targets`)
+  .join("<br>");
+
+ let notes=[];
+
+ if(acc<80)notes.push("Improve sustained attention and target recognition.");
+ if(falseAlarms>2)notes.push("Reduce anticipatory responses.");
+ if(avg&&avg>650)notes.push("Work on response speed while preserving accuracy.");
+ if(!total)notes.push("No targets were generated. Repeat the session.");
+ if(!notes.length)notes.push("Good balance of detection and response discipline.");
+
+ $("feedback").textContent=notes.join(" ");
+}
+
+// Touch controls
+document.querySelectorAll(".answer").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  answer(btn.dataset.answer);
+ });
+});
+
+// Keyboard controls
+document.addEventListener("keydown",e=>{
+ if(!running||e.repeat)return;
+
+ const map={
+  ArrowUp:"direction",
+  ArrowLeft:"position",
+  ArrowRight:"color",
+  ArrowDown:"shape"
+ };
+
+ if(map[e.key]){
+  e.preventDefault();
+  answer(map[e.key]);
+ }
+});
+
+$("start").addEventListener("click",start);
+$("stop").addEventListener("click",finish);
+
+$("again").addEventListener("click",()=>{
+ $("results").classList.add("hidden");
+ $("setup").classList.remove("hidden");
+});
+
+draw();
+})();
+</script>
+</body>
+</html>
